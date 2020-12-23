@@ -1,0 +1,92 @@
+version: '3.9'
+
+services:
+  site:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    container_name: nginx
+    environment:
+      - VIRTUAL_HOST=www.t.com
+      - LETSENCRYPT_HOST=www.t.com
+      - LETSENCRYPT_EMAIL=luckykenlin@gmail.com
+    ports:
+      - "3000:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - laravel
+      - mysql_default
+      - redis_default
+      - nginx_proxy
+
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: php
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - laravel
+      - mysql_default
+      - redis_default
+    external_links:
+      - mysql:mysql
+      - redis:redis
+
+  composer:
+    build:
+      context: .
+      dockerfile: composer.dockerfile
+    container_name: composer
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - php
+    user: laravel
+    networks:
+      - laravel
+      - mysql_default
+      - redis_default
+    entrypoint: [ 'composer', '--ignore-platform-reqs' ]
+
+  npm:
+    image: node:14.15.3
+    container_name: npm
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: [ 'npm' ]
+
+  artisan:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: artisan
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    user: laravel
+    entrypoint: [ 'php', '/var/www/html/artisan' ]
+    networks:
+      - laravel
+      - mysql_default
+      - redis_default
+    external_links:
+      - mysql:mysql
+      - redis:redis
+
+networks:
+  laravel:
+  mysql_default:
+    external: true
+  redis_default:
+    external: true
+  nginx_proxy:
+    external: true
