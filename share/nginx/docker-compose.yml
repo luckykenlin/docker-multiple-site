@@ -1,29 +1,31 @@
-version: "3.9"
-
-services:
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /etc/nginx/vhost.d
-      - /etc/nginx/certs
-      - /usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-    networks:
-      - proxy
-
-  ssl-generator:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    volumes_from:
-      - nginx-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /etc/acme.sh
-    networks:
-      - proxy
+version: '3.2'
 
 networks:
   proxy:
+    driver: bridge
+
+services:
+
+  mkcert:
+    image: aegypius/mkcert-for-nginx-proxy
+    restart: unless-stopped
+    volumes:
+      - ./ssl-certs:/app/certs
+      - ~/.mozilla/firefox:/root/.mozilla/firefox:rw
+      - ~/.pki/nssdb:/root/.pki/nssdb:rw
+      - ${CA_STORE:-/usr/local/share/ca-certificates}:/usr/local/share/ca-certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  proxy:
+    image: jwilder/nginx-proxy
+    networks:
+      - proxy
+    ports:
+      - published: 80
+        target: 80
+      - published: 443
+        target: 443
+    restart: unless-stopped
+    volumes:
+      - ./ssl-certs:/etc/nginx/certs
+      - /var/run/docker.sock:/tmp/docker.sock:ro
