@@ -1,4 +1,4 @@
-version: '3.2'
+version: '3'
 
 networks:
   proxy:
@@ -8,7 +8,6 @@ services:
 
   mkcert:
     image: aegypius/mkcert-for-nginx-proxy
-    restart: unless-stopped
     volumes:
       - ./ssl-certs:/app/certs
       - ~/.mozilla/firefox:/root/.mozilla/firefox:rw
@@ -21,11 +20,8 @@ services:
     networks:
       - proxy
     ports:
-      - published: 80
-        target: 80
-      - published: 443
-        target: 443
-    restart: unless-stopped
+      - "80:80"
+      - "443:443"
     volumes:
       - ./ssl-certs:/etc/nginx/certs
       - /var/run/docker.sock:/tmp/docker.sock:ro
