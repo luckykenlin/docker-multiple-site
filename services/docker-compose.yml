@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:5.7.29
+    tty: true
+    networks:
+      - multiple_site
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "Lkk168968"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - 'mysql:/var/lib/mysql'
+
+  redis:
+    image: 'redis:alpine'
+    networks:
+      - multiple_site
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis:/data'
+
+  proxy:
+    image: jwilder/nginx-proxy
+    networks:
+      - multiple_site
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl-certs:/etc/nginx/certs
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  mkcert:
+    image: aegypius/mkcert-for-nginx-proxy
+    volumes:
+      - ./ssl-certs:/app/certs
+      - ~/.mozilla/firefox:/root/.mozilla/firefox:rw
+      - ~/.pki/nssdb:/root/.pki/nssdb:rw
+      - ${CA_STORE:-/usr/local/share/ca-certificates}:/usr/local/share/ca-certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  multiple_site:
+    driver: bridge
+
+volumes:
+  mysql:
+    driver: local
+  redis:
+    driver: local
