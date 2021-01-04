@@ -80,9 +80,5 @@ services:
 
 networks:
   laravel:
-  mysql_default:
-    external: true
-  redis_default:
-    external: true
-  nginx_proxy:
+  services_multiple_site:
     external: true
