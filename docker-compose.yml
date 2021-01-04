@@ -18,9 +18,7 @@ services:
       - php
     networks:
       - laravel
-      - mysql_default
-      - redis_default
-      - nginx_proxy
+      - services_multiple_site
 
   php:
     build:
@@ -33,8 +31,7 @@ services:
       - "9000:9000"
     networks:
       - laravel
-      - mysql_default
-      - redis_default
+      - services_multiple_site
     external_links:
       - mysql:mysql
       - redis:redis
@@ -76,8 +73,7 @@ services:
     entrypoint: [ 'php', '/var/www/html/artisan' ]
     networks:
       - laravel
-      - mysql_default
-      - redis_default
+      - services_multiple_site
     external_links:
       - mysql:mysql
       - redis:redis
