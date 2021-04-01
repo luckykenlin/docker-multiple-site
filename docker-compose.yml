@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: nginx.dockerfile
-    container_name: nginx
     environment:
       - VIRTUAL_HOST=www.t.com
       - LETSENCRYPT_HOST=www.t.com
@@ -24,7 +23,6 @@ services:
     build:
       context: .
       dockerfile: php.dockerfile
-    container_name: php
     volumes:
       - ./src:/var/www/html
     ports:
@@ -40,7 +38,6 @@ services:
     build:
       context: .
       dockerfile: composer.dockerfile
-    container_name: composer
     volumes:
       - ./src:/var/www/html
     working_dir: /var/www/html
@@ -49,13 +46,11 @@ services:
     user: laravel
     networks:
       - laravel
-      - mysql_default
-      - redis_default
+      - services_multiple_site
     entrypoint: [ 'composer', '--ignore-platform-reqs' ]
 
   npm:
     image: node:14.15.3
-    container_name: npm
     volumes:
       - ./src:/var/www/html
     working_dir: /var/www/html
@@ -65,7 +60,6 @@ services:
     build:
       context: .
       dockerfile: php.dockerfile
-    container_name: artisan
     volumes:
       - ./src:/var/www/html
     working_dir: /var/www/html
